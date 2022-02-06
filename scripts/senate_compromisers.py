@@ -6,7 +6,7 @@ def main():
     api_key = os.environ["PROPUBLICA_API_KEY"]
     members = get_members_data(api_key)
     print("Senators most likely to break ranks:\n")
-    politicians_vote_against(members)
+    senators_split_sort(members)
 
 
 def get_members_data(api_key):
@@ -19,7 +19,7 @@ def get_members_data(api_key):
     return data
 
 
-def politicians_vote_against(members):
+def senators_split_sort(members):
     dems = []
     repubs = []
     for member in members:
@@ -40,16 +40,16 @@ def politicians_vote_against(members):
         dem_state = dem["state"]
         dem_vote_against = dem["votes_against_party_pct"]
         print(
-            f"*{dem_first_name} {dem_last_name} ({dem_state}) votes against the party {dem_vote_against}% of the time\n"
+            f"* {dem_first_name} {dem_last_name} ({dem_state}) votes against the party {dem_vote_against}% of the time"
         )
-    print("Republican\n--------")
+    print("\nRepublican\n--------")
     for repub in repubs_sorted:
         repub_first_name = repub["first_name"]
         repub_last_name = repub["last_name"]
         repub_state = repub["state"]
         repub_vote_against = repub["votes_against_party_pct"]
         print(
-            f"*{repub_first_name} {repub_last_name} ({repub_state}) votes against the party {repub_vote_against}% of the time"
+            f"* {repub_first_name} {repub_last_name} ({repub_state}) votes against the party {repub_vote_against}% of the time"
         )
 
 
