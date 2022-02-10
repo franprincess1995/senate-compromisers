@@ -1,13 +1,18 @@
 import os
 import requests
 
-
 def main():
     api_key = os.environ["PROPUBLICA_API_KEY"]
     members = get_members_data(api_key)
     print("Senators most likely to break ranks:\n")
-    sort_by_votes(members)
-    top_dems_repubs_printed()
+    grouped_members = group_members_by_party(members)
+    sorted_dems = sort_by_votes(grouped_members[0])
+    sorted_repubs = sort_by_votes(grouped_members[1])
+    sorted_politicians = sorted_dems + sorted_repubs
+    print("Democrat\n--------")
+    print_top_politicians(sorted_politicians[0:5])
+    print("\nRepublican\n--------")
+    print_top_politicians(sorted_politicians[5:11])
 
 
 def get_members_data(api_key):
@@ -16,55 +21,27 @@ def get_members_data(api_key):
     response = requests.get(url, headers=headers)
     full_dict = response.json()
     results = full_dict["results"]
-    data = results[0]["members"]
-    return data
+    return results[0]["members"]
 
 
-def sort_by_votes(members):
-    sorted_members_party = {"dems": [], "repubs": []}
+def group_members_by_party(members):
+    members_by_party = {"D": [], "R": [], 'ID': []}
     for member in members:
-        if member["party"] == "D":
-            sorted_members_party["dems"].append(member)
-            global against_party_dems
-            against_party_dems = sorted(
-                sorted_members_party["dems"],
-                key=lambda sorted_members_party: sorted_members_party[
-                    "votes_against_party_pct"
-                ],
-                reverse=True,
-            )[:5]
-        elif member["party"] == "R":
-            sorted_members_party["repubs"].append(member)
-            global against_party_repubs
-            against_party_repubs = sorted(
-                sorted_members_party["repubs"],
-                key=lambda sorted_members_party: sorted_members_party[
-                    "votes_against_party_pct"
-                ],
-                reverse=True,
-            )[:5]
-    return against_party_dems, against_party_repubs
+        party = member['party']
+        members_by_party[party].append(member)
+    #return members_by_party["Dems"], members_by_party["Repubs"]
 
+def sort_by_votes(grouped_members):
+    return sorted(grouped_members, key=lambda grouped_member: grouped_member["votes_against_party_pct"], reverse=True)[:5]
 
-def top_dems_repubs_printed():
-    print("Democrat\n--------")
-    for against_party_dem in against_party_dems:
-        first_name = against_party_dem["first_name"]
-        last_name = against_party_dem["last_name"]
-        state = against_party_dem["state"]
-        vote_against = against_party_dem["votes_against_party_pct"]
+def print_top_politicians(sorted_politicians):
+    for politician in sorted_politicians:
+        first_name = politician["first_name"]
+        last_name = politician["last_name"]
+        state = politician["state"]
+        party = politician["party"]
+        vote_against = politician["votes_against_party_pct"]
         print(
             f"* {first_name} {last_name} ({state}) votes against the party {vote_against}% of the time"
-        )
-    print("\nRepublican\n--------")
-    for against_party_repub in against_party_repubs:
-        first_name = against_party_repub["first_name"]
-        last_name = against_party_repub["last_name"]
-        state = against_party_repub["state"]
-        vote_against = against_party_repub["votes_against_party_pct"]
-        print(
-            f"* {first_name} {last_name} ({state}) votes against the party {vote_against}% of the time"
-        )
-
-
+            )
 main()
