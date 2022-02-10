@@ -1,5 +1,6 @@
 import os
 import requests
+from operator import itemgetter
 
 def main():
     api_key = os.environ["PROPUBLICA_API_KEY"]
@@ -14,7 +15,6 @@ def main():
     print("\nRepublican\n--------")
     print_top_politicians(sorted_politicians[5:11])
 
-
 def get_members_data(api_key):
     url = "https://api.propublica.org/congress/v1/117/senate/members.json"
     headers = {"X-API-Key": api_key}
@@ -23,12 +23,12 @@ def get_members_data(api_key):
     results = full_dict["results"]
     return results[0]["members"]
 
-
 def group_members_by_party(members):
     members_by_party = {"D": [], "R": [], 'ID': []}
     for member in members:
         party = member['party']
         members_by_party[party].append(member)
+    return members_by_party["D"], members_by_party["R"]
     #return members_by_party["Dems"], members_by_party["Repubs"]
 
 def sort_by_votes(grouped_members):
@@ -39,7 +39,6 @@ def print_top_politicians(sorted_politicians):
         first_name = politician["first_name"]
         last_name = politician["last_name"]
         state = politician["state"]
-        party = politician["party"]
         vote_against = politician["votes_against_party_pct"]
         print(
             f"* {first_name} {last_name} ({state}) votes against the party {vote_against}% of the time"
